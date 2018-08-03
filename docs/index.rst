@@ -1,5 +1,5 @@
 Welcome to pysharedmem's documentation!
-======================================
+=======================================
 
 Contents:
 
