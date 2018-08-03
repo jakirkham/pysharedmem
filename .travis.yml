@@ -5,34 +5,22 @@ language: generic
 os: osx
 osx_image: xcode6.4
 
+branches:
+  only:
+    - master
+
 env:
-  - PYVER="3.6"
-  - PYVER="3.5"
-  - PYVER="2.7"
+  - PYVER="36"
+  - PYVER="35"
+  - PYVER="27"
 
 install:
-  # Install Miniconda.
-  - curl -L https://repo.continuum.io/miniconda/Miniconda3-4.5.4-MacOSX-x86_64.sh > miniconda.sh
-  - openssl md5 miniconda.sh | grep 164ec263c4070db642ce31bb45d68813
-  - bash miniconda.sh -b -p ~/miniconda
-  - rm miniconda.sh
-
-  # Activate conda.
-  - source ~/miniconda/etc/profile.d/conda.sh
-  - conda activate base
-
-  # Configure conda.
-  - conda config --set show_channel_urls true
-
-  # Update conda.
-  - conda update -y -n root --all
-  - conda install -y -n root conda-build
-  - conda clean -tipsy
+  # Install and Configure Miniconda.
+  - source .travis_support/install_miniconda.sh
 
   # Create the test environment.
-  - conda create -y -n testenv python="${PYVER}"
-  - conda env update -n testenv --file environment_ci.yml
-  - source activate testenv
+  - export CONDA_ENV_TYPE="tst_py${PYVER}"
+  - source .travis_support/create_env.sh
 
   # Install the package and dependencies.
   - pip install -e .
@@ -45,9 +33,8 @@ script:
 
 # Report coverage.
 after_success:
-  - source activate root
-  - conda env update -n dplenv --file environment_dpl.yml
-  - source activate dplenv
+  - export CONDA_ENV_TYPE="dpl"
+  - source .travis_support/create_env.sh
   - coveralls
 
 # Disable email notifications.
