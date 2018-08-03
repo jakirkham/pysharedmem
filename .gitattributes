@@ -1,4 +1,5 @@
 pysharedmem/_version.py export-subst
 
+*.bat text eol=crlf
 *.sh text eol=lf
 *.yaml text eol=lf
