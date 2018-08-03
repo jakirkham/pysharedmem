@@ -1,0 +1,9 @@
+name: pysharedmem_env
+
+channels:
+  - conda-forge
+
+dependencies:
+  - pip==18.0
+  - wheel==0.31.1
+  - coverage==4.5.1
