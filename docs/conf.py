@@ -280,9 +280,13 @@ texinfo_documents = [
 #texinfo_no_detailmenu = False
 
 
+# Run sphinx-apidoc before building docs.
 def run_apidoc(_):
     ignore_paths = [
-        ...
+        "../setup.py",
+        "../tests",
+        "../travis_pypi_setup.py",
+        "../versioneer.py"
     ]
 
     argv = [
