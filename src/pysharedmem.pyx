@@ -5,13 +5,9 @@
 
 
 cimport cpython
-cimport cpython.buffer
-cimport cpython.bytes
 cimport cpython.object
 cimport cpython.tuple
 
-from cpython.buffer cimport PyBuffer_ToContiguous
-from cpython.bytes cimport PyBytes_FromStringAndSize
 from cpython.object cimport PyObject
 from cpython.tuple cimport PyTuple_Pack
 
@@ -64,16 +60,6 @@ cdef class cbuffer:
     def __releasebuffer__(self, Py_buffer *buffer):
         pass
 
-    def __reduce__(self):
-        cdef bytes buf_bytes = PyBytes_FromStringAndSize(
-            &self.buf[0], len(self.buf)
-        )
-
-        cdef tuple result = PyTuple_Pack(1, <PyObject*>buf_bytes)
-        result = PyTuple_Pack(2, <PyObject*>frombuffer, <PyObject*>result)
-
-        return result
-
     def __dealloc__(self):
         cdef char* ptr
         if self.buf is not None:
@@ -82,13 +68,38 @@ cdef class cbuffer:
             PyMem_RawFree(<void*>ptr)
 
 
+cdef class membuffer:
+    cdef object buf
+
+    def __init__(self, obj):
+        self.buf = PyMemoryView_FromObject(obj)
+
+    def __getbuffer__(self, Py_buffer *buffer, int flags):
+        Py_buffer* self_buffer = PyMemoryView_GET_BUFFER(self.buf)
+
+        buffer.buf = self_buffer
+        buffer.obj = self
+        buffer.len = self_buffer.len
+        buffer.readonly = self_buffer.readonly
+        buffer.itemsize = self_buffer.itemsize
+        buffer.format = self_buffer.format
+        buffer.ndim = self_buffer.ndim
+        buffer.shape = self_buffer.shape
+        buffer.strides = self_buffer.strides
+        buffer.suboffsets = self_buffer.suboffsets
+        buffer.internal = self_buffer.internal
+
+    def __releasebuffer__(self, Py_buffer *buffer):
+        pass
+
+    def __reduce__(self):
+        cdef bytes buf_bytes = self.buf.tobytes()
+
+        cdef tuple result = PyTuple_Pack(1, <PyObject*>s)
+        result = PyTuple_Pack(2, <PyObject*>frombuffer, <PyObject*>result)
+
+        return result
+
+
 def frombuffer(src):
-    src = PyMemoryView_FromObject(src)
-    cdef Py_buffer* src_buf = PyMemoryView_GET_BUFFER(src)
-
-    cdef cbuffer dest = cbuffer(src_buf.len)
-    cdef char* dest_ptr = &dest.buf[0]
-
-    PyBuffer_ToContiguous(<void*>dest_ptr, src_buf, src_buf.len, 'C')
-
-    return dest
+    return membuffer(src)
