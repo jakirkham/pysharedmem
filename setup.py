@@ -70,6 +70,7 @@ define_macros = []
 extra_compile_args = []
 cython_directives = {}
 cython_line_directives = {}
+cython_compile_time_env = {"PY_VERSION_HEX": sys.hexversion}
 
 
 if "test" in sys.argv:
@@ -99,6 +100,7 @@ ext_modules = [
 for em in ext_modules:
     em.cython_directives = dict(cython_directives)
     em.cython_line_directives = dict(cython_line_directives)
+    em.cython_compile_time_env = dict(cython_compile_time_env)
 
 
 setup(
